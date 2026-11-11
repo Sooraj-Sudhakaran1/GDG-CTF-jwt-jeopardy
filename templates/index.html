@@ -1,27 +1,239 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <title>Globex Dynamics — Employee Portal (fictional, for CTF use)</title>
-  <style>
-    body { font-family: system-ui, sans-serif; max-width: 700px; margin: 40px auto; line-height: 1.5; }
-    textarea { width: 100%; font-family: monospace; }
-    code { background: #f0f0f0; padding: 2px 6px; border-radius: 4px; }
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>GDG CTF Challenge for Team Lead Selection</title>
+<style>
+  :root {
+    --bg: #f7f7fb; --surface: #ffffff; --text: #1a1a2e; --muted: #6b6b80;
+    --border: #e2e2ec; --accent: #4f46e5; --accent-text: #ffffff;
+    --ok: #0a8a3f; --err: #c0392b; --mono-bg: #f1f1f8;
+    color-scheme: light dark;
+    box-sizing: border-box;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #121218; --surface: #1b1b24; --text: #eceef5; --muted: #9a9ab0;
+      --border: #2c2c3a; --accent: #8b7bff; --accent-text: #121218;
+      --ok: #4ade80; --err: #f87171; --mono-bg: #23232f;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #121218; --surface: #1b1b24; --text: #eceef5; --muted: #9a9ab0;
+    --border: #2c2c3a; --accent: #8b7bff; --accent-text: #121218;
+    --ok: #4ade80; --err: #f87171; --mono-bg: #23232f;
+  }
+  html { scroll-padding-top: env(safe-area-inset-top, 0px); }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    line-height: 1.55;
+  }
+  header {
+    padding: 36px 20px 24px; text-align: center;
+    border-bottom: 1px solid var(--border);
+  }
+  header h1 { margin: 0 0 4px; font-size: clamp(1.4rem, 4vw, 2rem); letter-spacing: 0.02em; }
+  header .enroll { color: var(--muted); font-size: 0.95rem; margin-bottom: 14px; }
+  header .subtitle {
+    display: inline-block; font-size: 0.85rem; font-weight: 600;
+    color: var(--accent); background: color-mix(in srgb, var(--accent) 12%, transparent);
+    padding: 6px 14px; border-radius: 999px; letter-spacing: 0.04em; text-transform: uppercase;
+  }
+  main { max-width: 820px; margin: 0 auto; padding: 28px 16px 60px; }
+  .progress {
+    text-align: center; margin-bottom: 28px; font-size: 0.95rem; color: var(--muted);
+  }
+  .progress strong { color: var(--text); }
+  .card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
+    padding: 22px 22px 26px; margin-bottom: 26px;
+  }
+  .card-head { display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap; gap: 8px; margin-bottom: 6px; }
+  .card-head h2 { margin: 0; font-size: 1.25rem; }
+  .tag { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;
+    color: var(--muted); border: 1px solid var(--border); border-radius: 6px; padding: 3px 8px; }
+  .story { color: var(--muted); font-size: 0.96rem; margin: 10px 0 16px; }
+  .mono-box {
+    background: var(--mono-bg); border: 1px solid var(--border); border-radius: 8px;
+    padding: 12px 14px; font-family: "SF Mono", Consolas, monospace; font-size: 0.85rem;
+    word-break: break-all; margin-bottom: 14px; position: relative;
+  }
+  .copy-btn {
+    position: absolute; top: 8px; right: 8px; font-size: 0.72rem; padding: 4px 9px;
+    border-radius: 6px; border: 1px solid var(--border); background: var(--surface);
+    color: var(--text); cursor: pointer;
+  }
+  .link-btn {
+    display: inline-block; margin-bottom: 14px; padding: 9px 16px; border-radius: 8px;
+    background: var(--accent); color: var(--accent-text); text-decoration: none;
+    font-weight: 600; font-size: 0.9rem;
+  }
+  .hint-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
+  .hint-btn {
+    font-size: 0.82rem; padding: 7px 12px; border-radius: 8px; border: 1px solid var(--border);
+    background: var(--surface); color: var(--text); cursor: pointer;
+  }
+  .hint-btn:hover { border-color: var(--accent); }
+  .hint-text {
+    display: none; background: var(--mono-bg); border-left: 3px solid var(--accent);
+    padding: 10px 12px; border-radius: 6px; font-size: 0.88rem; margin-bottom: 8px;
+  }
+  .hint-text.shown { display: block; }
+  .flag-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 16px; }
+  .flag-row input {
+    flex: 1; min-width: 180px; padding: 10px 12px; border-radius: 8px;
+    border: 1px solid var(--border); background: var(--bg); color: var(--text); font-size: 0.9rem;
+  }
+  .flag-row button {
+    padding: 10px 18px; border-radius: 8px; border: none; background: var(--accent);
+    color: var(--accent-text); font-weight: 600; cursor: pointer; font-size: 0.9rem;
+  }
+  .feedback { margin-top: 10px; font-size: 0.88rem; font-weight: 600; min-height: 1.2em; }
+  .feedback.ok { color: var(--ok); }
+  .feedback.err { color: var(--err); }
+  .card.solved { border-color: var(--ok); }
+  footer { text-align: center; color: var(--muted); font-size: 0.8rem; padding: 20px; }
+</style>
 </head>
 <body>
-  <h1>Globex Dynamics — Employee Portal</h1>
-  <p>(Fictional company, for CTF training purposes only.)</p>
-  <p>
-    Welcome, intern! You've been issued a standard employee token. Unfortunately,
-    a teammate just mentioned they captured this exact token off the office
-    Wi-Fi during a pentest exercise. Can anything be done with it?
-  </p>
-  <p><strong>Your token</strong> (also set as a cookie named <code>token</code>):</p>
-  <textarea rows="6" readonly>{{ token }}</textarea>
-  <p>
-    There's an <a href="/admin">/admin</a> endpoint. Right now your token
-    won't get you in... but is the token tamper-proof?
-  </p>
+
+<header>
+  <h1>SOORAJ SUDHAKARAN</h1>
+  <div class="enroll">Enroll No: <em>33</em></div>
+  <span class="subtitle">GDG-CTF-Challenge for Team Lead Selection</span>
+</header>
+
+<main>
+  <div class="progress">Flags captured: <strong id="progressCount">0</strong> / 2</div>
+
+  <section class="card" id="card1">
+    <div class="card-head"><h2>🍾 Message in a Bottle</h2><span class="tag">Beginner · Crypto</span></div>
+    <p class="story">
+      A retiring field agent went dark last night, but not before dropping one
+      last message into the dead-drop. Field agents never send anything in
+      plaintext — standard tradecraft is to wrap it, then wrap it again.
+      Peel back the layers and recover her final message.
+    </p>
+    <div class="mono-box" id="c1data">
+      5646465565336b3062444e6c5a6c38776331387a59584177635446686448303d
+      <button class="copy-btn" onclick="copyText('c1data')">Copy</button>
+    </div>
+    <div class="hint-row">
+      <button class="hint-btn" onclick="toggleHint('h1a')">Hint 1</button>
+      <button class="hint-btn" onclick="toggleHint('h1b')">Hint 2</button>
+      <button class="hint-btn" onclick="toggleHint('h1c')">Hint 3</button>
+    </div>
+    <div class="hint-text" id="h1a">The string only contains 0-9 and a-f. What encoding uses just those characters?</div>
+    <div class="hint-text" id="h1b">After undoing that layer, the result ends in "=" padding and mixes case, digits, "+" and "/" — a very common second layer.</div>
+    <div class="hint-text" id="h1c">The final layer is a classic shift cipher where encoding and decoding use the exact same operation — shift amount 13.</div>
+    <div class="flag-row">
+      <input type="text" id="flag1" placeholder="GDG{...}" autocomplete="off" spellcheck="false">
+      <button onclick="checkFlag(1)">Submit</button>
+    </div>
+    <div class="feedback" id="fb1"></div>
+  </section>
+
+  <section class="card" id="card2">
+    <div class="card-head"><h2>🔐 The Intern's Token</h2><span class="tag">Experienced · Web / JWT</span></div>
+    <p class="story">
+      You're interning at Globex Dynamics (fictional). The portal hands you a
+      standard employee session token. A teammate mentions one just like it
+      was intercepted during a pentest. Escalate from <code>employee</code>
+      to <code>admin</code> and read the flag served at <code>/admin</code>.
+    </p>
+    <a class="link-btn" href="https://gdg-ctf-jwt-jeopardy.onrender.com/" target="_blank" rel="noopener">
+      Open the live challenge ↗
+    </a>
+    <p class="story" style="margin-top:-6px;font-size:0.82rem;">
+      (Free-tier hosting — first load may take ~1 minute to wake up.)
+    </p>
+    <div class="hint-row">
+      <button class="hint-btn" onclick="toggleHint('h2a')">Hint 1</button>
+      <button class="hint-btn" onclick="toggleHint('h2b')">Hint 2</button>
+      <button class="hint-btn" onclick="toggleHint('h2c')">Hint 3</button>
+    </div>
+    <div class="hint-text" id="h2a">JWTs have three dot-separated parts. The first two are just Base64url, not encrypted — decode the payload (e.g. at jwt.io) and see what field gates access.</div>
+    <div class="hint-text" id="h2b">The signature uses HS256 — a symmetric algorithm signed and verified with one shared secret. If that secret is weak, you can recompute a valid signature yourself.</div>
+    <div class="hint-text" id="h2c">The secret is short and themed (company name + a recent year). A small Python loop with PyJWT trying a handful of candidates against <code>jwt.decode(token, candidate, algorithms=["HS256"])</code> will crack it. Then re-sign a payload with <code>"role": "admin"</code>.</div>
+    <div class="flag-row">
+      <input type="text" id="flag2" placeholder="GDG{...}" autocomplete="off" spellcheck="false">
+      <button onclick="checkFlag(2)">Submit</button>
+    </div>
+    <div class="feedback" id="fb2"></div>
+  </section>
+</main>
+
+<footer>Both flags are checked locally in your browser via a one-way hash — the plaintext flag is never stored in this page's code.</footer>
+
+<script>
+
+const FLAG_HASHES = {
+  1: "d6b389d9c2da67607d4a995fca4e6b4b6a587df7ecc6051d0cbe9860f63a8ec8",
+  2: "b3bd5c39d12dce97fa1710ec8cb8605a3be94147b755d0fe135e6ede5dca8667"
+};
+
+let solved = { 1: false, 2: false };
+
+function toggleHint(id) {
+  document.getElementById(id).classList.toggle('shown');
+}
+
+function copyText(id) {
+  const el = document.getElementById(id);
+  const text = el.childNodes[0].textContent.trim();
+  navigator.clipboard?.writeText(text).catch(() => {});
+}
+
+async function sha256Hex(message) {
+  const data = new TextEncoder().encode(message);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+  return Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+async function checkFlag(n) {
+  const input = document.getElementById('flag' + n);
+  const fb = document.getElementById('fb' + n);
+  const guess = input.value.trim();
+  if (!guess) return;
+  try {
+    const hash = await sha256Hex(guess);
+    if (hash === FLAG_HASHES[n]) {
+      fb.textContent = "✅ Correct! Flag captured.";
+      fb.className = "feedback ok";
+      solved[n] = true;
+      document.getElementById('card' + n).classList.add('solved');
+      updateProgress();
+      try { localStorage.setItem('gdgctf_solved_' + n, '1'); } catch (e) {}
+    } else {
+      fb.textContent = "❌ Not quite — keep trying.";
+      fb.className = "feedback err";
+    }
+  } catch (e) {
+    fb.textContent = "Something went wrong checking that flag.";
+    fb.className = "feedback err";
+  }
+}
+
+function updateProgress() {
+  const count = Object.values(solved).filter(Boolean).length;
+  document.getElementById('progressCount').textContent = count;
+}
+
+try {
+  for (const n of [1, 2]) {
+    if (localStorage.getItem('gdgctf_solved_' + n) === '1') {
+      solved[n] = true;
+      document.getElementById('card' + n).classList.add('solved');
+    }
+  }
+  updateProgress();
+} catch (e) {}
+</script>
+
 </body>
 </html>
