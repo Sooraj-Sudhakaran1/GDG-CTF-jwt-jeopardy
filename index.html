@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Globex Dynamics — Employee Portal (fictional, for CTF use)</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 700px; margin: 40px auto; line-height: 1.5; }
+    textarea { width: 100%; font-family: monospace; }
+    code { background: #f0f0f0; padding: 2px 6px; border-radius: 4px; }
+  </style>
+</head>
+<body>
+  <h1>Globex Dynamics — Employee Portal</h1>
+  <p>(Fictional company, for CTF training purposes only.)</p>
+  <p>
+    Welcome, intern! You've been issued a standard employee token. Unfortunately,
+    a teammate just mentioned they captured this exact token off the office
+    Wi-Fi during a pentest exercise. Can anything be done with it?
+  </p>
+  <p><strong>Your token</strong> (also set as a cookie named <code>token</code>):</p>
+  <textarea rows="6" readonly>{{ token }}</textarea>
+  <p>
+    There's an <a href="/admin">/admin</a> endpoint. Right now your token
+    won't get you in... but is the token tamper-proof?
+  </p>
+</body>
+</html>
